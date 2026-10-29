@@ -507,21 +507,6 @@ void xenos_set_mode(struct mode_s *mode)
 	xenos_current_mode = mode;
 }
 
-int xenos_hdmi_vga_mode_fix(int mode)
-{
-	struct edid * monitor_edid = xenos_get_edid();
-		// fix some non standart mode (vga + yuv or hdmi/dvi + yuv )
-		if(monitor_edid) {
-			// HDMI or DVI
-			if(monitor_edid->input&DRM_EDID_INPUT_DIGITAL)
-				return VIDEO_MODE_HDMI_720P;
-			// VGA
-			else
-				return VIDEO_MODE_VGA_1024x768;
-		}
-		return mode;
-}
-
 int xenos_get_sd_video_mode()
 {
 	switch (xenon_config_get_avregion())
@@ -570,13 +555,7 @@ void xenos_autoset_mode(void)
 	mode = xenos_get_sd_video_mode();
 
 	if (is_hdmi) {
-		// HDMI takes precedent over everything
-		// but because of this comment from before:
-		//  "this fixes a generic vga adapter, was under HDMI"
-		// lets detect if we have a valid (+digital) EDID first..?
-		// (the kernel doesn't do this...)
-		//mode = VIDEO_MODE_HDMI_720P;
-		mode = xenos_hdmi_vga_mode_fix(VIDEO_MODE_HDMI_720P);
+		mode = VIDEO_MODE_HDMI_720P;
 	} else if (multiout == AV_COMPONENT_HD) {
 		mode = VIDEO_MODE_YUV_720P;
 	} else if (multiout == AV_VGA) {
